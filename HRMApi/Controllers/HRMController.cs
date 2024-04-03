@@ -7,82 +7,74 @@ namespace HRMApi.Controllers
     [ApiController]
     public class HRMController : ControllerBase
     {
-        private readonly List<Employee> _employees;
-        public HRMController()
+        private static List<Employee> _employees = new List<Employee>
         {
-            _employees = new List<Employee>
-            {
-                new Employee { Id = 1, Name = "Vanh", PhoneNumber = "12345678", Email="name1@gmail.com" },
-                new Employee { Id = 2, Name = "Nguyen Van A", PhoneNumber = "12345678", Email="name1@gmail.com" }
-            };
-        }
+            new Employee { Id = 1, Name = "John Doe", PhoneNumber = "12345678", Email="name1@gmail.com" },
+            new Employee { Id = 2, Name = "Jane Smith", PhoneNumber = "12345678", Email="name1@gmail.com" },
+            // Thêm các nhân viên khác tại đây
+        };
 
-        // GET: api/Employees
+        // GET: api/employee
         [HttpGet]
-        public IEnumerable<Employee> Get()
+        public ActionResult<IEnumerable<Employee>> Get()
         {
             return _employees;
         }
 
-        // GET: api/Employees/5
+        // GET: api/employee/1
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public ActionResult<Employee> Get(int id)
         {
             var employee = _employees.FirstOrDefault(e => e.Id == id);
             if (employee == null)
             {
                 return NotFound();
             }
-            return Ok(employee);
+            return employee;
         }
 
-        // POST: api/Employees
+        // POST: api/employee
         [HttpPost]
-        public IActionResult Post([FromBody] Employee employee)
+        public ActionResult<Employee> Post(Employee employee)
         {
-            // Generate new ID for employee
             employee.Id = _employees.Count + 1;
-            // Thêm nhân viên mới vào danh sách
             _employees.Add(employee);
-            // Trả về mã trạng thái 201 Created và chi tiết của nhân viên đã tạo
             return CreatedAtAction(nameof(Get), new { id = employee.Id }, employee);
         }
 
-        // PUT: api/Employees/5
+        // PUT: api/employee/1
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Employee employee)
+        public IActionResult Put(int id, Employee updatedEmployee)
         {
-            var existingEmployee = _employees.FirstOrDefault(e => e.Id == id);
-            if (existingEmployee == null)
+            var employee = _employees.FirstOrDefault(e => e.Id == id);
+            if (employee == null)
             {
                 return NotFound();
             }
-            // Cập nhật thông tin của nhân viên
-            existingEmployee.Name = employee.Name;
-            existingEmployee.PhoneNumber = employee.PhoneNumber;
-            existingEmployee.Email = employee.Email;
+            employee.Name = updatedEmployee.Name;
+            employee.PhoneNumber = updatedEmployee.PhoneNumber;
+            employee.Email = updatedEmployee.Email;
             return NoContent();
         }
 
-        // DELETE: api/Employees/5
+        // DELETE: api/employee/1
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var employeeToRemove = _employees.FirstOrDefault(e => e.Id == id);
-            if (employeeToRemove == null)
+            var employee = _employees.FirstOrDefault(e => e.Id == id);
+            if (employee == null)
             {
                 return NotFound();
             }
-            // Xóa nhân viên khỏi danh sách
-            _employees.Remove(employeeToRemove);
+            _employees.Remove(employee);
             return NoContent();
         }
 
-        // GET: api/Employees/search?name=John
+        // GET: api/employee/search?name=John
         [HttpGet("search")]
-        public IActionResult Search(string name)
+        public ActionResult<IEnumerable<Employee>> Search(string name)
         {
-            var employees = _employees.Where(e => e.Name.ToLower().Contains(name.ToLower()));
+            var employees = _employees.Where(e => e.Name.Contains(name));
             return Ok(employees);
         }
     }
